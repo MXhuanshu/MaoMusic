@@ -70,7 +70,7 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.style.fontSize': 140,
   'playDetail.style.align': 'center',
   'playDetail.isDelayScroll': true,
-  'playDetail.visualizer': 'lite',
+  'playDetail.visualizer': 'full',
   'playDetail.background': 'mosaic',
   'playDetail.visualizerMode': 'classic',
   'playDetail.backgroundMode': 'sora',

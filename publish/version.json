@@ -1,5 +1,5 @@
 {
-  "version": "2.0.2",
-  "desc": "猫仙音乐 2.0.2：播放详情进度条改用 Folia 原码 ProgressBar。",
+  "version": "2.0.3",
+  "desc": "猫仙音乐 2.0.3：修复升级后视觉档位仍为 lite 导致看不到 Folia 舞台，首次启动自动升级为 full。",
   "history": []
 }
