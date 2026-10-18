@@ -11,6 +11,20 @@ export const isShowAnimation = computed(() => {
 
 export const initSetting = (newSetting: LX.AppSetting) => {
   mergeSetting(newSetting)
+  migrateVisualizerPreference()
+}
+
+// 一次性迁移：v1.x 的播放详情视觉档位默认是 'lite'（纯 CSS 渐变），
+// 升级上来的用户配置里仍存着这个值，Folia 舞台（v2.0 起）就永远不会挂载，
+// 表现为「装了新版却跟以前没差别」。这里在用户配置合并进 appSetting 之后，
+// 把从未手动改过的旧 'lite' 升级为 'full'。
+// 必须放在 initSetting 里：模块顶层代码在 import 阶段就执行完了，
+// 那时用户配置还没从主进程读回来，判断会直接跳过。
+const migrateVisualizerPreference = () => {
+  if (appSetting['playDetail.visualizer'] !== 'lite') return
+  if ((window.lxData as any).foliaVisualizerUpgraded) return
+  ;(window.lxData as any).foliaVisualizerUpgraded = true
+  updateSetting({ 'playDetail.visualizer': 'full' })
 }
 
 export const mergeSetting = (newSetting: Partial<LX.AppSetting>) => {

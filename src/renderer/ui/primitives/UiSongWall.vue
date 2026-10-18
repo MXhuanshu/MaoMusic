@@ -91,15 +91,29 @@ const emit = defineEmits<{
 
 const rootRef = ref<HTMLElement | null>(null)
 
-const coverOf = (item: any): string | undefined => item?.pic ?? item?.musicInfo?.pic ?? item?.metadata?.picUrl
+// 歌曲对象在猫仙里有几种形态，封面/歌名/歌手的位置都不一样，
+// 必须全部覆盖，否则磁贴墙会出现大片无封面灰块。
+//   在线歌曲 MusicInfo:        { name, singer, meta: { picUrl, albumName } }
+//   播放器扁平化 musicInfo:    { name, singer, pic, album }
+//   下载任务 DownloadTask:     { metadata: { musicInfo: { name, singer, meta: { picUrl } } } }
+const asSong = (item: any): any => item?.metadata?.musicInfo ?? item?.musicInfo ?? item ?? {}
 
-const titleOf = (item: any): string => item?.name ?? item?.musicInfo?.name ?? ''
+const coverOf = (item: any): string | undefined => {
+  const song = asSong(item)
+  return item?.pic ?? song?.pic ?? song?.meta?.picUrl ?? item?.meta?.picUrl ?? undefined
+}
+
+const titleOf = (item: any): string => {
+  const song = asSong(item)
+  return item?.name ?? song?.name ?? ''
+}
 
 const subtitleOf = (item: any): string => {
   if (props.subtitleKey === 'none') return ''
-  const singer = item?.singer ?? item?.musicInfo?.singer ?? ''
+  const song = asSong(item)
+  const singer = item?.singer ?? song?.singer ?? ''
   if (props.subtitleKey === 'singer') return singer
-  const album = item?.meta?.albumName ?? item?.musicInfo?.meta?.albumName ?? ''
+  const album = item?.album ?? song?.meta?.albumName ?? item?.meta?.albumName ?? ''
   return [singer, album].filter(Boolean).join(' · ')
 }
 

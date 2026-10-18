@@ -5,7 +5,7 @@
 // full 星野背景 + 3D 歌词走廊 + 粒子
 
 import { computed } from '@common/utils/vueTools'
-import { appSetting, updateSetting } from '@renderer/store/setting'
+import { appSetting } from '@renderer/store/setting'
 import { hasWebgl2, prefersReducedMotion } from './useShaderQuad'
 
 export type VisualizerMode = 'off' | 'lite' | 'full'
@@ -13,14 +13,8 @@ export type VisualizerMode = 'off' | 'lite' | 'full'
 const webgl2Ready = hasWebgl2()
 const reducedMotion = prefersReducedMotion()
 
-// 旧版本默认是 'lite'（纯 CSS 渐变），升级上来的用户配置里仍存着这个值，
-// 导致装了 2.0 仍然看不到 Folia 舞台。这里在首次进入该判定时一次性把旧 'lite'
-// 升级为 'full'（Folia 舞台）。用户之后在设置里手动改回 lite 不会被覆盖。
-if (appSetting['playDetail.visualizer'] === 'lite' && !window.lxData.foliaVisualizerUpgraded) {
-  window.lxData.foliaVisualizerUpgraded = true
-  updateSetting({ 'playDetail.visualizer': 'full' })
-}
-
+// 注：旧 'lite' → 'full' 的一次性迁移在 store/setting.ts 的 initSetting 里，
+// 不能放在模块顶层（那时用户配置还没读回来）。
 export const useVisualizerMode = () => computed<VisualizerMode>(() => {
   const preference = (appSetting['playDetail.visualizer'] ?? 'full') as VisualizerMode
   if (preference === 'off') return 'off'
