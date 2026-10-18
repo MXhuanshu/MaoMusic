@@ -84,7 +84,8 @@
       <!-- 主体：歌词 + 右侧抽屉 -->
       <div class="relative z-10 flex min-h-0 flex-1 gap-3 px-3 pb-2">
         <div class="relative min-w-0 flex-1 overflow-hidden">
-          <LyricPlayer v-if="visibled" class="h-full" />
+          <!-- 完整视觉下歌词由 3D 走廊承载，这里不再叠一份平面歌词 -->
+          <LyricPlayer v-if="visibled && showFlatLyric" class="h-full" />
         </div>
 
         <PanelShell v-model="activeTab" :tabs="tabs" class="mb-1">
@@ -221,6 +222,8 @@ import MusicComment from '@renderer/components/layout/PlayDetail/components/Musi
 import { registerAutoHideMounse, unregisterAutoHideMounse } from '@renderer/components/layout/PlayDetail/autoHideMounse'
 import PanelShell from '@renderer/ui/features/panel/PanelShell.vue'
 import VisualizerLayer from '@renderer/ui/features/visualizer/VisualizerLayer.vue'
+import { useVisualizerMode } from '@renderer/ui/features/visualizer/useVisualizerMode'
+import { lyric } from '@renderer/store/player/lyric'
 import UiButton from '@renderer/ui/primitives/UiButton.vue'
 import UiProgressBar from '@renderer/ui/features/player/UiProgressBar.vue'
 
@@ -257,6 +260,10 @@ export default {
     } = useToggleDesktopLyric()
 
     const t = useI18n()
+    const visualizerMode = useVisualizerMode()
+    // 3D 歌词只在「完整」档位接管歌词；没有歌词时退回平面歌词
+    const showFlatLyric = computed(() => visualizerMode.value !== 'full' || !lyric.lines.length)
+
     const tabs = computed(() => [
       { id: 'info', label: t('player_detail__tab_info') },
       { id: 'comment', label: t('player_detail__tab_comment') },
@@ -324,6 +331,7 @@ export default {
       isPlay,
       isFullscreen,
       visibled,
+      showFlatLyric,
       activeTab,
       tabs,
       isShowAddMusicTo,

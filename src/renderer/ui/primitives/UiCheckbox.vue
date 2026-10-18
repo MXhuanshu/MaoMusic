@@ -1,9 +1,9 @@
 <template>
   <!--
-    复选框 / 单选二合一：与旧 base-checkbox 签名一致，need + value 时表现为单选组。
+    设置里的选择项：布尔项渲染成开关（与 UiSwitch 同一样式），单选组渲染成圆点。
     保留 input+label 结构以兼容旧的 for/id 关联与 E2E 选择器。
   -->
-  <label class="group inline-flex cursor-pointer select-none items-start gap-2.5" :for="id">
+  <label class="group inline-flex cursor-pointer select-none items-center gap-2.5" :for="id" :class="disabled ? 'cursor-default opacity-50' : ''">
     <input
       :id="id"
       ref="dom_input"
@@ -18,17 +18,22 @@
     >
 
     <span
-      class="relative mt-px flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[5px] border transition-colors duration-150 ease-ui"
-      :class="[
-        checked ? 'border-accent bg-accent' : 'border-line2 bg-fill group-hover:border-accent/60',
-        disabled ? 'opacity-40' : '',
-      ]"
+      v-if="need"
+      class="grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 transition-colors duration-150 ease-ui"
+      :class="checked ? 'border-accent' : 'border-line2 group-hover:border-accent/60'"
     >
-      <Check v-if="checked" :size="12" :stroke-width="3" class="text-on-accent" />
+      <span class="h-1.5 w-1.5 rounded-full transition-colors duration-150" :class="checked ? 'bg-accent' : 'bg-transparent'" />
+    </span>
+    <span
+      v-else
+      class="relative h-[22px] w-[38px] shrink-0 rounded-full transition-colors duration-200 ease-ui"
+      :class="checked ? 'bg-accent' : 'bg-track'"
+      role="switch"
+      :aria-checked="checked"
+    >
       <span
-        v-if="need"
-        class="absolute h-[7px] w-[7px] rounded-full"
-        :class="checked ? 'bg-on-accent' : ''"
+        class="absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm transition-[left] duration-200 ease-ui"
+        :class="checked ? 'left-[19px]' : 'left-[3px]'"
       />
     </span>
 
@@ -42,7 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { Check } from 'lucide-vue-next'
 import { ref, watch } from '@common/utils/vueTools'
 
 const props = withDefaults(defineProps<{
@@ -51,6 +55,7 @@ const props = withDefaults(defineProps<{
   id?: string
   name?: string
   need?: boolean
+  disabled?: boolean
   ariaLabel?: string
   label?: string | null
 }>(), {
@@ -58,6 +63,7 @@ const props = withDefaults(defineProps<{
   id: undefined,
   name: undefined,
   need: false,
+  disabled: false,
   ariaLabel: undefined,
   label: null,
 })
