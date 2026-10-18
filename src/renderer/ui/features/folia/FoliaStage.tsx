@@ -22,6 +22,7 @@ export interface FoliaStageProps {
   songAlbum: string | null
   isDaylight: boolean
   backgroundMode: string
+  visualizerTunings?: Record<string, unknown>
   onBack?: () => void
 }
 
@@ -67,6 +68,7 @@ const FoliaStage: React.FC<FoliaStageProps> = (props) => {
     paused: props.paused,
     onBack: props.onBack,
     background: { mode: props.backgroundMode as any },
+    visualizerTunings: props.visualizerTunings,
   }), [
     props.currentLineIndex,
     props.lines,
@@ -79,6 +81,7 @@ const FoliaStage: React.FC<FoliaStageProps> = (props) => {
     props.coverUrl,
     props.paused,
     props.backgroundMode,
+    props.visualizerTunings,
     props.onBack,
   ])
 

@@ -74,6 +74,7 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.background': 'mosaic',
   'playDetail.visualizerMode': 'classic',
   'playDetail.backgroundMode': 'sora',
+  'playDetail.visualizerTunings': {},
 
   'desktopLyric.enable': false,
   'desktopLyric.isLock': false,

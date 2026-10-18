@@ -59,6 +59,8 @@
         :model-value="appSetting['playDetail.backgroundMode']"
         @update:model-value="updateSetting({'playDetail.backgroundMode': $event})")
 
+  FoliaTuningPanel
+
   UiSettingSection(:title="$t('setting__play_detail_align')")
     .flex.flex-wrap.gap-3.py-1
       UiCheckbox(
@@ -83,13 +85,14 @@ import { computed } from '@common/utils/vueTools'
 import { useI18n } from '@renderer/plugins/i18n'
 import { appSetting, updateSetting } from '@renderer/store/setting'
 import { isVisualizerSupported } from '@renderer/ui/features/visualizer/useVisualizerMode'
+import FoliaTuningPanel from './FoliaTuningPanel.vue'
 import UiCheckbox from '@renderer/ui/primitives/UiCheckbox.vue'
 import UiSegmented from '@renderer/ui/primitives/UiSegmented.vue'
 import UiSettingSection from '@renderer/ui/primitives/UiSettingSection.vue'
 
 export default {
   name: 'SettingPlayDetail',
-  components: { UiCheckbox, UiSegmented, UiSettingSection },
+  components: { FoliaTuningPanel, UiCheckbox, UiSegmented, UiSettingSection },
   setup() {
     const t = useI18n()
     const visualizerOptions = computed(() => [

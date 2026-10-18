@@ -60,6 +60,7 @@ const foliaTheme = computed<Theme>(() => {
 
 const mode = computed(() => (appSetting['playDetail.visualizerMode'] ?? 'classic') as any)
 const backgroundMode = computed(() => (appSetting['playDetail.backgroundMode'] ?? 'sora') as any)
+const visualizerTunings = computed(() => appSetting['playDetail.visualizerTunings'] ?? {})
 
 const currentLineIndex = computed(() => {
   const line = lyric.line
@@ -83,6 +84,7 @@ const render = () => {
     songAlbum: musicInfo.album ?? null,
     isDaylight: document.documentElement.dataset.daylight === 'true',
     backgroundMode: backgroundMode.value,
+    visualizerTunings: visualizerTunings.value,
     onBack: () => {
       emit('back')
     },
@@ -98,6 +100,7 @@ onMounted(() => {
 watch([
   mode,
   backgroundMode,
+  visualizerTunings,
   foliaTheme,
   foliaLines,
   currentLineIndex,

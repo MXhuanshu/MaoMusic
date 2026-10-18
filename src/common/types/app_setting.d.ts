@@ -339,6 +339,12 @@ declare global {
        */
       'playDetail.backgroundMode': string
 
+      /**
+       * 播放详情页-Folia 各视觉模式的调优参数，按模式 id 存储
+       * 例：{ classic: { enableWordRotation: true, breathingFloatMultiplier: 1 } }
+       */
+      'playDetail.visualizerTunings': Record<string, Record<string, unknown>>
+
 
       /**
        * 是否启用桌面歌词
