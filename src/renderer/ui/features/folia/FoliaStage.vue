@@ -28,6 +28,16 @@ const emit = defineEmits<{
 
 const dom_stage = ref<HTMLElement | null>(null)
 let root: Root | null = null
+let stageHandle: { setTime: (t: number) => void, setPower: (p: number) => void } | null = null
+let rafId: number | null = null
+
+// 播放时间与频谱走 MotionValue 直接更新，避免每帧重渲染 React 树
+const tick = () => {
+  rafId = requestAnimationFrame(tick)
+  if (!stageHandle) return
+  stageHandle.setTime(playProgress.nowPlayTime)
+  stageHandle.setPower(0)
+}
 
 /** 解析 LX Music 逐字歌词（lxlrc）：每行 [mm:ss.xxx]，词用 <mm:ss.xxx> 包裹 */
 const parseLxLyricWords = (lxlrc: string): Map<string, Array<{ text: string, startTime: number, endTime: number }>> => {
@@ -104,6 +114,9 @@ const currentLineIndex = computed(() => {
 const render = () => {
   if (!root) return
   root.render(createElement(FoliaStage, {
+    ref: (handle: any) => {
+      stageHandle = handle
+    },
     mode: mode.value,
     theme: foliaTheme.value,
     lines: foliaLines.value,
@@ -129,6 +142,7 @@ onMounted(() => {
   if (!dom_stage.value) return
   root = createRoot(dom_stage.value)
   render()
+  rafId = requestAnimationFrame(tick)
 })
 
 watch([
@@ -138,7 +152,6 @@ watch([
   foliaTheme,
   foliaLines,
   currentLineIndex,
-  () => playProgress.nowPlayTime,
   () => playProgress.maxPlayTime,
   () => musicInfo.pic,
   () => musicInfo.name,
@@ -149,6 +162,9 @@ watch([
 ], render, { deep: false })
 
 onBeforeUnmount(() => {
+  if (rafId !== null) cancelAnimationFrame(rafId)
+  rafId = null
+  stageHandle = null
   root?.unmount()
   root = null
 })

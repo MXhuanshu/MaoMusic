@@ -1,6 +1,6 @@
 // React island 宿主：把 Folia 的 VisualizerRenderer 挂进 Vue 页面。
 // 只做状态桥接（主题 / 歌词 / 播放时间 / 频谱），视觉逻辑全部来自 folia-src 原码。
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { motionValue, type MotionValue } from 'framer-motion'
 
 import '@renderer/folia-src/i18n/config'
@@ -26,7 +26,12 @@ export interface FoliaStageProps {
   onBack?: () => void
 }
 
-const FoliaStage: React.FC<FoliaStageProps> = (props) => {
+export interface FoliaStageHandle {
+  setTime: (time: number) => void
+  setPower: (power: number) => void
+}
+
+const FoliaStage = forwardRef<FoliaStageHandle, FoliaStageProps>((props, ref) => {
   const timeRef = useRef<MotionValue<number>>(motionValue(0))
   const powerRef = useRef<MotionValue<number>>(motionValue(0))
   const bandsRef = useRef<AudioBands>({
@@ -50,6 +55,22 @@ const FoliaStage: React.FC<FoliaStageProps> = (props) => {
     bands.vocal.set(props.audioPower)
     bands.treble.set(props.audioPower)
   }, [props.audioPower])
+
+  // 高频更新（播放时间 / 频谱）走 MotionValue 直接 set，不触发 React 重渲染
+  useImperativeHandle(ref, () => ({
+    setTime: (time: number) => {
+      timeRef.current.set(time)
+    },
+    setPower: (power: number) => {
+      powerRef.current.set(power)
+      const bands = bandsRef.current
+      bands.bass.set(power)
+      bands.lowMid.set(power)
+      bands.mid.set(power)
+      bands.vocal.set(power)
+      bands.treble.set(power)
+    },
+  }), [])
 
   const sharedProps = useMemo(() => ({
     currentTime: timeRef.current,
@@ -94,6 +115,6 @@ const FoliaStage: React.FC<FoliaStageProps> = (props) => {
       />
     </div>
   )
-}
+})
 
 export default FoliaStage
