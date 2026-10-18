@@ -1,64 +1,24 @@
 <template>
   <div class="relative flex h-full flex-col">
-    <!-- 表头 -->
-    <div class="flex h-9 shrink-0 items-center gap-2 border-b border-line px-3 text-[11.5px] text-t3">
-      <span class="w-8 shrink-0 text-center">#</span>
-      <span class="min-w-0 flex-1">{{ $t('music_name') }}</span>
-      <span class="shrink-0 truncate" :class="actionButtonsVisible ? 'w-[22%]' : 'w-[25%]'">{{ $t('music_singer') }}</span>
-      <span class="shrink-0 truncate" :class="actionButtonsVisible ? 'w-[22%]' : 'w-[28%]'">{{ $t('music_album') }}</span>
-      <span class="w-12 shrink-0 text-right">{{ $t('music_time') }}</span>
-      <span v-if="actionButtonsVisible" class="w-[104px] shrink-0" />
-    </div>
-
     <div v-show="list.length" ref="dom_listContent" class="relative min-h-0 flex-1">
-      <base-virtualized-list
+      <UiSongWall
         ref="listRef"
-        v-slot="{ item, index }"
         :list="list"
-        key-name="id"
-        :item-height="listItemHeight"
-        container-class="ui-scroll"
-        content-class="relative"
-        @scroll="saveListPosition"
-        @contextmenu.capture="handleListRightClick"
+        :playing-index="playingIndex"
+        :selected-list="selectedList"
+        :source-tag="isShowSource"
+        @item-click="handleListItemClick"
+        @item-contextmenu="handleListItemRightClick"
+        @list-contextmenu="handleListRightClick"
       >
-        <div
-          class="group flex h-full cursor-default items-center gap-2 px-3 text-[12.5px] transition-colors duration-100"
-          :class="[
-            selectedIndex == index || rightClickSelectedIndex == index ? 'bg-fill2' : 'hover:bg-fill',
-            selectedList.includes(item) ? 'bg-accent/10' : '',
-            playerInfo.isPlayList && playerInfo.playIndex === index ? 'text-accent' : 'text-t2',
-          ]"
-          @click="handleListItemClick($event, index)"
-          @contextmenu="handleListItemRightClick($event, index)"
-        >
-          <span class="no-select w-8 shrink-0 text-center text-[11px] tabular-nums text-t3" @click.stop>
-            <Volume2 v-if="playerInfo.isPlayList && playerInfo.playIndex === index" :size="13" :stroke-width="2" />
-            <template v-else>{{ index + 1 }}</template>
-          </span>
-
-          <div class="flex min-w-0 flex-1 items-center gap-1.5">
-            <span class="select truncate" :aria-label="item.name">{{ item.name }}</span>
-            <span v-if="isShowSource" class="no-select shrink-0 rounded bg-fill2 px-1 text-[10px] leading-none text-t3">{{ item.source }}</span>
-          </div>
-
-          <span class="shrink-0 truncate text-t3" :class="actionButtonsVisible ? 'w-[22%]' : 'w-[25%]'">
-            <span class="select" :aria-label="item.singer">{{ item.singer }}</span>
-          </span>
-          <span class="shrink-0 truncate text-t3" :class="actionButtonsVisible ? 'w-[22%]' : 'w-[28%]'">
-            <span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span>
-          </span>
-          <span class="w-12 shrink-0 text-right text-[11.5px] tabular-nums text-t3">{{ item.interval || '--/--' }}</span>
-
-          <span v-if="actionButtonsVisible" class="w-[104px] shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
-            <UiListActions
-              :index="index"
-              :download-btn="assertApiSupport(item.source) && item.source != 'local'"
-              @btn-click="handleListBtnClick"
-            />
-          </span>
-        </div>
-      </base-virtualized-list>
+        <template #actions="slot">
+          <UiListActions
+            :index="Number(slot.index)"
+            :download-btn="assertApiSupport(slot.item.source) && slot.item.source != 'local'"
+            @btn-click="handleListBtnClick"
+          />
+        </template>
+      </UiSongWall>
     </div>
     <div v-show="!list.length" class="absolute inset-0">
       <UiEmptyState :title="$t('no_item')" />
@@ -81,15 +41,16 @@
 </template>
 
 <script>
+import { computed } from '@common/utils/vueTools'
 import { clipboardWriteText } from '@common/utils/electron'
 import { assertApiSupport } from '@renderer/store/utils'
 import SearchList from './components/SearchList.vue'
 import MusicSortModal from './components/MusicSortModal.vue'
 import MusicToggleModal from './components/MusicToggleModal.vue'
-import { Volume2 } from 'lucide-vue-next'
 import UiContextMenu from '@renderer/ui/primitives/UiContextMenu.vue'
-import UiListActions from '@renderer/ui/primitives/UiListActions.vue'
 import UiEmptyState from '@renderer/ui/primitives/UiEmptyState.vue'
+import UiListActions from '@renderer/ui/primitives/UiListActions.vue'
+import UiSongWall from '@renderer/ui/primitives/UiSongWall.vue'
 import useListInfo from './useListInfo'
 import useList from './useList'
 import useMenu from './useMenu'
@@ -106,9 +67,9 @@ export default {
   name: 'MusicList',
   components: {
     UiContextMenu,
-    UiListActions,
     UiEmptyState,
-    Volume2,
+    UiListActions,
+    UiSongWall,
     SearchList,
     MusicSortModal,
     MusicToggleModal,
@@ -154,6 +115,8 @@ export default {
       handleSelectData,
       removeAllSelect,
     } = useList({ listRef, list })
+
+    const playingIndex = computed(() => playerInfo.isPlayList ? playerInfo.playIndex : -1)
 
     const {
       handlePlayMusic,
@@ -286,6 +249,7 @@ export default {
     }
 
     return {
+      playingIndex,
       listItemHeight,
       handleListItemClick,
       selectedList,

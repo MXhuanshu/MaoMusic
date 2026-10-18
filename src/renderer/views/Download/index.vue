@@ -4,64 +4,31 @@
       <UiTabs v-model="activeTab" :list="tabs" />
     </div>
 
-    <div class="mt-1 flex h-9 shrink-0 items-center gap-2 border-b border-line px-4 text-[11.5px] text-t3">
-      <span class="w-8 shrink-0 text-center">#</span>
-      <span class="min-w-0 flex-1">{{ $t('music_name') }}</span>
-      <span class="w-[20%] shrink-0 truncate">{{ $t('download__progress') }}</span>
-      <span class="w-[22%] shrink-0 truncate">{{ $t('download__status') }}</span>
-      <span class="w-[10%] shrink-0">{{ $t('download__quality') }}</span>
-      <span class="w-[112px] shrink-0" />
-    </div>
-
     <div v-if="list.length" ref="dom_listContent" class="relative min-h-0 flex-1">
-      <base-virtualized-list
+      <UiSongWall
         ref="listRef"
-        v-slot="{ item, index }"
         :list="list"
-        key-name="id"
-        :item-height="listItemHeight"
-        container-class="ui-scroll"
-        content-class="relative"
+        :playing-index="playingIndex"
+        :selected-list="selectedList"
+        subtitle-key="none"
+        @item-click="handleListItemClick"
+        @item-contextmenu="handleListItemRightClick"
       >
-        <div
-          class="group flex h-full cursor-default items-center gap-2 px-4 text-[12.5px] transition-colors duration-100"
-          :class="[
-            rightClickSelectedIndex == index ? 'bg-fill2' : 'hover:bg-fill',
-            selectedList.includes(item) ? 'bg-accent/10' : '',
-            playTaskId == item.id ? 'text-accent' : 'text-t2',
-          ]"
-          @click="handleListItemClick($event, index)"
-          @contextmenu="handleListItemRightClick($event, index)"
-        >
-          <span class="no-select w-8 shrink-0 text-center text-[11px] tabular-nums text-t3" @click.stop>
-            <Volume2 v-if="playTaskId == item.id" :size="13" :stroke-width="2" />
-            <template v-else>{{ index + 1 }}</template>
-          </span>
-
-          <span class="select min-w-0 flex-1 truncate" :aria-label="getName(item)">{{ getName(item) }}</span>
-
-          <span class="w-[20%] shrink-0 truncate text-[11.5px] text-t3">
-            {{ item.progress }}%<span v-if="item.status == downloadStatus.RUN && item.speed"> - {{ item.speed }}/s</span>
-          </span>
-          <span class="w-[22%] shrink-0 truncate text-[11.5px] text-t3" :aria-label="item.statusText">{{ item.statusText }}</span>
-          <span class="w-[10%] shrink-0 text-[11.5px] text-t3">{{ getTypeName(item.metadata.quality) }}</span>
-
-          <span class="w-[112px] shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
-            <UiListActions
-              :index="index"
-              :download-btn="false"
-              :file-btn="item.status != downloadStatus.ERROR"
-              :remove-btn="true"
-              :start-btn="!item.isComplate && item.status != downloadStatus.WAITING && (item.status != downloadStatus.RUN)"
-              :pause-btn="!item.isComplate && (item.status == downloadStatus.RUN || item.status == downloadStatus.WAITING)"
-              :list-add-btn="false"
-              :play-btn="item.status == downloadStatus.COMPLETED"
-              :search-btn="item.status == downloadStatus.ERROR"
-              @btn-click="handleListBtnClick"
-            />
-          </span>
-        </div>
-      </base-virtualized-list>
+        <template #actions="slot">
+          <UiListActions
+            :index="Number(slot.index)"
+            :download-btn="false"
+            :file-btn="slot.item.status != downloadStatus.ERROR"
+            :remove-btn="true"
+            :start-btn="!slot.item.isComplate && slot.item.status != downloadStatus.WAITING && (slot.item.status != downloadStatus.RUN)"
+            :pause-btn="!slot.item.isComplate && (slot.item.status == downloadStatus.RUN || slot.item.status == downloadStatus.WAITING)"
+            :list-add-btn="false"
+            :play-btn="slot.item.status == downloadStatus.COMPLETED"
+            :search-btn="slot.item.status == downloadStatus.ERROR"
+            @btn-click="handleListBtnClick"
+          />
+        </template>
+      </UiSongWall>
     </div>
 
     <div v-else class="absolute inset-0 mt-8">
@@ -83,7 +50,7 @@
 <script>
 // import { checkPath, openDirInExplorer, openUrl } from '@common/utils/electron'
 
-import { ref } from '@common/utils/vueTools'
+import { computed, ref } from '@common/utils/vueTools'
 import useListInfo from './useListInfo'
 import useList from './useList'
 import useTab from './useTab'
@@ -95,10 +62,10 @@ import { downloadStatus } from '@renderer/store/download/state'
 import { appSetting } from '@renderer/store/setting'
 import { formatMusicName } from '@renderer/utils'
 
-import { Volume2 } from 'lucide-vue-next'
 import UiContextMenu from '@renderer/ui/primitives/UiContextMenu.vue'
 import UiEmptyState from '@renderer/ui/primitives/UiEmptyState.vue'
 import UiListActions from '@renderer/ui/primitives/UiListActions.vue'
+import UiSongWall from '@renderer/ui/primitives/UiSongWall.vue'
 import UiTabs from '@renderer/ui/primitives/UiTabs.vue'
 export default {
   name: 'Download',
@@ -106,7 +73,7 @@ export default {
     UiContextMenu,
     UiEmptyState,
     UiListActions,
-    Volume2,
+    UiSongWall,
     UiTabs,
   },
   setup() {
@@ -127,6 +94,8 @@ export default {
       removeAllSelect,
       handleSelectData,
     } = useList({ listRef, list, listAll })
+
+    const playingIndex = computed(() => list.value.findIndex(item => item.id === playTaskId.value))
 
     const {
       handlePlayMusic,
@@ -244,6 +213,7 @@ export default {
       activeTab,
       selectedList,
       listItemHeight,
+      playingIndex,
       playTaskId,
 
       isShowListAdd,

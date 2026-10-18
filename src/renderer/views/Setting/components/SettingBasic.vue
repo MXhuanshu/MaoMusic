@@ -75,7 +75,7 @@ div.setting-panel
           span.status(v-if="item.statusLabel") {{ item.statusLabel }}
     .mt-3
       UiButton(size="sm" variant="secondary" @click="isShowUserApiModal = true")
-        | {{ $t('setting__basic_source_user_api_btn') }}
+        | 管理自定义源 / 导入音乐源
 
   UiSettingSection(:title="$t('setting__basic_window_size')")
     .flex.flex-wrap.gap-x-5.gap-y-1
