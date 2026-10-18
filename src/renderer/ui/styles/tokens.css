@@ -1,0 +1,242 @@
+/* ==========================================================================
+   设计令牌层 —— Folia 视觉体系在猫仙音乐里的落地
+   --------------------------------------------------------------------------
+   命名分三层：
+     --ui-*    根表面（背景/前景/强调），对应 Folia 的 --bg-color / --text-*
+     --st-*    设置套件与面板的固定表面（卡片/菜单/描边/填充/状态色），与 Folia 同名
+     --pn-*    播放页悬浮面板的玻璃层，与 Folia 同名
+
+   全部由 JS 运行时注入（core/theme/applyTheme.ts → window.setTheme），
+   下面的 :root 只是首帧兜底，值取 Folia 默认暗色主题。
+   ========================================================================== */
+
+:root {
+  /* 根表面：Folia DEFAULT_THEME（午夜墨染） */
+  --ui-bg: #09090b;
+  --ui-fg: #f4f4f5;
+  --ui-fg-2: #71717a;
+  --ui-accent: #f4f4f5;
+  --ui-on-accent: #09090b;
+
+  /* 设置套件表面（暗） */
+  --st-win: #1a1a1d;
+  --st-side: #141416;
+  --st-card: #232327;
+  --st-menu: #2b2b30;
+  --st-raise: #45454c;
+  --st-knob: #ececee;
+  --st-pv: #151517;
+
+  /* 状态色 */
+  --st-ok: #56c98d;
+  --st-warn: #e3a949;
+  --st-err: #ef6f6f;
+
+  /* 文字与描边阶：跟随 --ui-fg 混合 */
+  --st-t1: var(--ui-fg);
+  --st-t2: color-mix(in srgb, var(--ui-fg) 62%, transparent);
+  --st-t3: color-mix(in srgb, var(--ui-fg) 42%, transparent);
+  --st-line: color-mix(in srgb, var(--ui-fg) 8%, transparent);
+  --st-line2: color-mix(in srgb, var(--ui-fg) 16%, transparent);
+  --st-fill: color-mix(in srgb, var(--ui-fg) 7%, transparent);
+  --st-fill2: color-mix(in srgb, var(--ui-fg) 12%, transparent);
+  --st-track: color-mix(in srgb, var(--ui-fg) 17%, transparent);
+
+  /* 播放页悬浮面板 */
+  --pn-glass: rgba(28, 28, 31, 0.8);
+  --pn-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.09);
+  --pn-like: #f2607a;
+
+  /* 动效词汇 */
+  --st-dur-fast: 0.12s;
+  --st-dur-move: 0.22s;
+  --st-dur-unfold: 0.3s;
+  --st-dur-show: 0.48s;
+  --st-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --st-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --st-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* 滚动条 */
+  --ui-scrollbar-track: #18181b;
+  --ui-scrollbar-thumb: #3f3f46;
+  --ui-scrollbar-thumb-hover: #52525b;
+}
+
+/* 日光主题兜底：Folia DAYLIGHT_THEME（日光素白） */
+:root[data-daylight='true'] {
+  --ui-bg: #f5f5f4;
+  --ui-fg: #1c1917;
+  --ui-fg-2: #44403c;
+  --ui-accent: #ea580c;
+  --ui-on-accent: #ffffff;
+
+  --st-win: #f3f3f4;
+  --st-side: #e9e9eb;
+  --st-card: #ffffff;
+  --st-menu: #ffffff;
+  --st-raise: #ffffff;
+  --st-knob: #ffffff;
+  --st-pv: #ececef;
+
+  --st-ok: #1e9a5c;
+  --st-warn: #b97a10;
+  --st-err: #d04444;
+
+  --pn-glass: rgba(244, 244, 245, 0.8);
+  --pn-shadow: 0 30px 80px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --pn-like: #e0354f;
+
+  --ui-scrollbar-track: #e7e5e4;
+  --ui-scrollbar-thumb: #a8a29e;
+  --ui-scrollbar-thumb-hover: #78716c;
+}
+
+/* ==========================================================================
+   Tailwind 主题映射
+   inline 是必须的：让 bg-ui-bg 直接引用 var(--ui-bg)，
+   这样运行时换主题不需要重新生成 CSS，/50 这类透明度修饰符也能正确解析。
+   ========================================================================== */
+
+@theme inline {
+  /* 根表面：bg-bg / text-fg / text-fg-2 / bg-accent / text-on-accent */
+  --color-bg: var(--ui-bg);
+  --color-fg: var(--ui-fg);
+  --color-fg-2: var(--ui-fg-2);
+  --color-accent: var(--ui-accent);
+  --color-on-accent: var(--ui-on-accent);
+
+  /* 设置套件表面：bg-card / bg-menu / bg-raise / bg-knob / bg-pv / bg-win / bg-side */
+  --color-win: var(--st-win);
+  --color-side: var(--st-side);
+  --color-card: var(--st-card);
+  --color-menu: var(--st-menu);
+  --color-raise: var(--st-raise);
+  --color-knob: var(--st-knob);
+  --color-pv: var(--st-pv);
+
+  /* 状态色 */
+  --color-ok: var(--st-ok);
+  --color-warn: var(--st-warn);
+  --color-err: var(--st-err);
+
+  /* 文字与描边阶：text-t2 / border-line / bg-fill / bg-track */
+  --color-t2: var(--st-t2);
+  --color-t3: var(--st-t3);
+  --color-line: var(--st-line);
+  --color-line2: var(--st-line2);
+  --color-fill: var(--st-fill);
+  --color-fill2: var(--st-fill2);
+  --color-track: var(--st-track);
+
+  /* 播放页玻璃层 */
+  --color-glass: var(--pn-glass);
+  --color-like: var(--pn-like);
+
+  --radius-card: 12px;
+  --radius-sheet: 16px;
+  --radius-panel: 20px;
+  --radius-cmd: 24px;
+
+  --ease-ui: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-sans: "Inter", "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, "Noto Serif CJK SC", "Source Han Serif SC",
+    "Songti SC", "SimSun", serif;
+}
+
+/* ==========================================================================
+   表单底座
+   不引 preflight 的代价：button / input 会保留浏览器 UA 默认样式
+   （浅灰底、2px outset 边框、默认字体）。在深色玻璃界面上会直接露馅。
+   这里只做最小重置，外观仍然交给工具类。
+   选择器是元素级（0,0,1），旧组件的类样式（0,1,0）依旧能覆盖它。
+   ========================================================================== */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  cursor: pointer;
+  /* 拖动区里的按钮必须显式声明，否则点击会被当成拖窗口 */
+  -webkit-app-region: no-drag;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ==========================================================================
+   工具类
+   ========================================================================== */
+
+/* 窗口拖动区。拖动区里的可点元素必须加 app-no-drag，否则点击会被当成拖动。 */
+@utility app-drag {
+  -webkit-app-region: drag;
+}
+
+@utility app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* ==========================================================================
+   复用样式
+   注意：这些是普通类（不在 @layer 里），特异性与工具类相同，
+   而 tailwind.css 先于旧 Less 载入，所以工具类可以覆盖它们，反之亦然。
+   ========================================================================== */
+
+.ui-scroll {
+  overflow: auto;
+}
+.ui-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.ui-scroll::-webkit-scrollbar-track {
+  background: var(--ui-scrollbar-track);
+}
+.ui-scroll::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: var(--ui-scrollbar-thumb);
+}
+.ui-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--ui-scrollbar-thumb-hover);
+}
+
+.ui-scroll-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ui-scroll-hidden::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* 玻璃层：播放条、右面板、标题栏共用 */
+.ui-glass {
+  background: var(--pn-glass);
+  box-shadow: var(--pn-shadow);
+  -webkit-backdrop-filter: blur(40px) saturate(1.3);
+  backdrop-filter: blur(40px) saturate(1.3);
+}
+
+/* 禁止选中（窗口外壳、控制条） */
+.ui-noselect {
+  -webkit-user-select: none;
+  user-select: none;
+}

@@ -1,0 +1,103 @@
+<template lang="pug">
+.setting-panel
+  UiSettingSection(:title="$t('setting__update')")
+    .flex.flex-col.gap-1.py-1
+      UiCheckbox(
+        id="setting__update_tryAutoUpdate"
+        :model-value="appSetting['common.tryAutoUpdate']"
+        :label="$t('setting__update_try_auto_update')"
+        @update:model-value="updateSetting({'common.tryAutoUpdate': $event})")
+      UiCheckbox(
+        id="setting__update_showChangeLog"
+        :model-value="appSetting['common.showChangeLog']"
+        :label="$t('setting__update_show_change_log')"
+        @update:model-value="updateSetting({'common.showChangeLog': $event})")
+
+      div(class="mt-3 flex flex-col gap-1 text-[12px] text-t3")
+        p.cursor-pointer(@click="handleOpenDevTools")
+          | {{ $t('setting__update_current_label') }}{{ versionInfo.version }}
+        p(v-if="commit_id")
+          | {{ $t('setting__update_commit_id') }}
+          span.text-fg.ml-1 {{ commit_id }}
+        p(v-if="commit_date") {{ $t('setting__update_commit_date') }}{{ commit_date }}
+        p
+          | {{ $t('setting__update_latest_label') }}{{ versionInfo.newVersion && versionInfo.newVersion.version != '0.0.0' ? versionInfo.newVersion.version : $t('setting__update_unknown') }}
+        p(v-if="downloadProgress" style="line-height: 1.5;")
+          | {{ $t('setting__update_downloading') }}
+          br
+          | {{ $t('setting__update_progress') }}{{ downloadProgress }}
+        template(v-if="versionInfo.newVersion")
+          p(v-if="versionInfo.isLatest")
+            span {{ $t('setting__update_latest') }}
+          p(v-else-if="versionInfo.isUnknown")
+            span {{ $t('setting__update_unknown_tip') }}
+          p(v-else-if="versionInfo.status != 'downloading'")
+            span {{ $t('setting__update_new_version') }}
+          p
+            UiButton.ml-1(size="sm" variant="secondary" @click="showUpdateModal")
+              | {{ $t('setting__update_open_version_modal_btn') }}
+        p(v-else-if="versionInfo.status =='checking'") {{ $t('setting__update_checking') }}
+</template>
+
+<script>
+import { computed } from '@common/utils/vueTools'
+import { versionInfo } from '@renderer/store'
+import { dateFormat, sizeFormate } from '@common/utils/common'
+import { openDevTools } from '@renderer/utils/ipc'
+import { useI18n } from '@renderer/plugins/i18n'
+import { appSetting, updateSetting } from '@renderer/store/setting'
+
+import UiCheckbox from '@renderer/ui/primitives/UiCheckbox.vue'
+import UiButton from '@renderer/ui/primitives/UiButton.vue'
+import UiSettingSection from '@renderer/ui/primitives/UiSettingSection.vue'
+
+export default {
+  name: 'SettingUpdate',
+  components: { UiCheckbox, UiButton, UiSettingSection },
+  setup() {
+    let lastClickTime = 0
+    let clickNum = 0
+    const commit_id = COMMIT_ID
+    const commit_date = dateFormat(COMMIT_DATE)
+
+    const t = useI18n()
+
+    const handleOpenDevTools = () => {
+      if (window.performance.now() - lastClickTime > 1000) {
+        if (clickNum > 0) clickNum = 0
+      } else {
+        if (clickNum > 4) {
+          openDevTools()
+          clickNum = 0
+          return
+        }
+      }
+      clickNum++
+      lastClickTime = window.performance.now()
+    }
+
+    const downloadProgress = computed(() => {
+      return versionInfo.status == 'downloading'
+        ? versionInfo.downloadProgress
+          ? `${versionInfo.downloadProgress.percent.toFixed(2)}% - ${sizeFormate(versionInfo.downloadProgress.transferred)}/${sizeFormate(versionInfo.downloadProgress.total)} - ${sizeFormate(versionInfo.downloadProgress.bytesPerSecond)}/s`
+          : t('setting__update_init')
+        : ''
+    })
+
+    const showUpdateModal = () => {
+      versionInfo.showModal = true
+    }
+
+    return {
+      versionInfo,
+      downloadProgress,
+      handleOpenDevTools,
+      showUpdateModal,
+      appSetting,
+      updateSetting,
+      commit_id,
+      commit_date,
+    }
+  },
+}
+</script>

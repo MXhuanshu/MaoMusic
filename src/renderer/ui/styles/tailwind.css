@@ -1,0 +1,21 @@
+/**
+ * Tailwind 4 入口 —— 猫仙音乐 × Folia UI 迁移
+ *
+ * 设计要点：
+ * 1. 不引入 preflight。项目现有 reset.less 继续当家，避免两套 reset 打架。
+ * 2. utilities 故意**不放进 @layer**。原因：reset.less / index.less 是无层规则，
+ *    按 CSS 层叠层规范「无层声明优先于有层声明」，若 utilities 进层，`div{margin:0}`
+ *    会盖掉 `.p-4`。保持无层后回归普通特异性比较，`.p-4`(0,1,0) 自然赢过
+ *    `div`(0,0,1)。代价是旧组件样式若与新工具类特异性相同、且源码顺序在后会赢，
+ *    所以迁移纪律：一个元素上不要同时留 $style 类又用工具类改同一属性。
+ * 3. @source 显式指定扫描范围，避免把主进程 Node 代码当成类名来源。
+ */
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
+@import "./tokens.css";
+
+@source "../../**/*.{vue,ts}";
+@source "../../../renderer-lyric/**/*.{vue,ts}";
+@source not "../../../main";

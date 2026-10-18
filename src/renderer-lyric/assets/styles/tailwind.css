@@ -1,0 +1,13 @@
+/*
+  桌面歌词窗的 Tailwind 入口。
+  只扫描 renderer-lyric 目录 + 共用令牌，避免把主窗口上百个组件的工具类复制进歌词窗的 CSS。
+  令牌本身由主窗通过 IPC 推送（core/mainWindowChannel.ts 的 set_theme_tokens），
+  这里只提供首帧兜底与 @theme 映射。
+*/
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
+@import "../../../renderer/ui/styles/tokens.css";
+
+@source "../../**/*.{vue,ts}";
