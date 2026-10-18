@@ -178,7 +178,7 @@
           </div>
 
           <span class="w-10 shrink-0 text-right text-[11px] tabular-nums text-t3">{{ nowPlayTimeStr }}</span>
-          <UiProgressBar class="min-w-0 flex-1" />
+          <FoliaProgressBar class="min-w-0 flex-1" />
           <span class="w-10 shrink-0 text-[11px] tabular-nums text-t3">{{ maxPlayTimeStr }}</span>
         </div>
 
@@ -223,10 +223,10 @@ import MusicComment from '@renderer/components/layout/PlayDetail/components/Musi
 import { registerAutoHideMounse, unregisterAutoHideMounse } from '@renderer/components/layout/PlayDetail/autoHideMounse'
 import PanelShell from '@renderer/ui/features/panel/PanelShell.vue'
 import FoliaStage from '@renderer/ui/features/folia/FoliaStage.vue'
+import FoliaProgressBar from '@renderer/ui/features/folia/FoliaProgressBar.vue'
 import { useVisualizerMode } from '@renderer/ui/features/visualizer/useVisualizerMode'
 import { lyric } from '@renderer/store/player/lyric'
 import UiButton from '@renderer/ui/primitives/UiButton.vue'
-import UiProgressBar from '@renderer/ui/features/player/UiProgressBar.vue'
 
 export default {
   name: 'PlayerDetail',
@@ -245,8 +245,8 @@ export default {
     MusicComment,
     PanelShell,
     FoliaStage,
+    FoliaProgressBar,
     UiButton,
-    UiProgressBar,
   },
   setup() {
     const visibled = ref(false)
