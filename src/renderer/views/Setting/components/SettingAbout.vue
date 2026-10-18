@@ -2,6 +2,11 @@
 .setting-panel
   UiSettingSection(:title="$t('setting__about')")
     div(class="flex flex-col gap-2 py-1 text-[12.5px] text-t3")
+      div(class="mb-1 flex items-center gap-3")
+        img(:src="logo" class="h-14 w-14 rounded-[12px] ring-1 ring-line" alt="猫仙音乐")
+        div
+          div(class="text-[15px] font-semibold text-fg") 猫仙音乐
+          div(class="mt-0.5 text-[11.5px] text-t3") v{{ version }}
       p
         | 猫仙音乐是免费的本地/在线音乐播放器，界面基于 Folia 视觉语言重做，兼容 LX Music 的音乐源与自定义源。
       p
@@ -29,6 +34,7 @@ import { isShowPact } from '@renderer/store'
 import { clipboardWriteText, openUrl } from '@common/utils/electron'
 import pkg from '../../../../../package.json'
 
+import logo from '@renderer/assets/images/logo.png'
 import UiButton from '@renderer/ui/primitives/UiButton.vue'
 import UiSettingSection from '@renderer/ui/primitives/UiSettingSection.vue'
 
@@ -41,6 +47,7 @@ export default {
     }
     return {
       version: pkg.version,
+      logo,
       openUrl,
       clipboardWriteText,
       handleShowPact,

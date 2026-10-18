@@ -1,16 +1,13 @@
 <template>
-  <!--
-    星野背景：全屏三角 + 噪声星云 + 三层星点，颜色跟着封面强调色走。
-    移植自 Folia 的 SoraBackground（twgl 版），这里换成自建的全屏三角宿主，
-    只为去掉 twgl 依赖；着色器思路一致（drift 星点 + 噪声星云 + 呼吸光晕）。
-  -->
-  <canvas ref="canvas" class="absolute inset-0 h-full w-full" />
+  <canvas ref="canvasRef" class="absolute inset-0 block h-full w-full" />
 </template>
 
 <script setup lang="ts">
+// 直接移植自 Folia 的 SoraBackground（AGPL-3.0）：
+// src/components/visualizer/backgrounds/sora/SoraBackground.tsx
+// 着色器与粒子参数保持原样，仅把 React 外壳换成 Vue。
 import { onBeforeUnmount, onMounted, ref, watch } from '@common/utils/vueTools'
-import { colorToVec3, createShaderQuad, prefersReducedMotion } from '../useShaderQuad'
-import type { ShaderQuadHandle } from '../useShaderQuad'
+import * as twgl from 'twgl.js'
 
 const props = withDefaults(defineProps<{
   accent?: string
@@ -24,141 +21,157 @@ const props = withDefaults(defineProps<{
   paused: false,
 })
 
-const FRAGMENT = `
-precision highp float;
+const PARTICLE_COUNT = 150
 
-uniform vec2 uRes;
-uniform float uTime;
-uniform vec3 uAccent;
-uniform vec3 uBg;
-uniform float uPower;
+const VERTEX_SHADER = `
+attribute float a_index;
+uniform vec2 u_resolution;
+uniform float u_time;
+varying float v_color_type;
+varying float v_intensity_base;
 
-float hash(vec2 p) {
+float hash2(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
 
-float noise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(
-    mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
-    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
-    u.y
-  );
-}
-
 void main() {
-  vec2 uv = gl_FragCoord.xy / uRes;
-  vec2 p = uv - 0.5;
-  p.x *= uRes.x / uRes.y;
+  float seed = a_index * 123.456;
 
-  float t = uTime * 0.02;
+  float speed_rand = hash2(vec2(seed, 1.1));
+  float size_rand = hash2(vec2(seed, 2.2));
+  float y_rand = hash2(vec2(seed, 3.3));
+  float x_rand = hash2(vec2(seed, 4.4));
+  float blink_rand = hash2(vec2(seed, 5.5));
+  float color_type_rand = hash2(vec2(seed, 6.6));
 
-  float n1 = noise(p * 2.2 + vec2(t, -t * 0.7));
-  float n2 = noise(p * 4.6 - vec2(t * 1.3, t));
-  float nebula = smoothstep(0.35, 0.95, n1 * 0.65 + n2 * 0.45);
+  float aspect = u_resolution.x / u_resolution.y;
+  float speed = 0.008 + speed_rand * 0.024;
+  float size = 0.0006 + 0.0032 * pow(size_rand, 3.8);
 
-  vec3 color = uBg;
-  color += uAccent * nebula * (0.16 + uPower * 0.26);
+  float y = -0.45 + y_rand * 0.9;
 
-  float glow = smoothstep(0.95, 0.0, length(p));
-  color += uAccent * glow * 0.10;
+  float margin = 0.05;
+  float width = aspect + margin * 2.0;
+  float x = fract(x_rand + u_time * speed);
+  x = x * width - (aspect * 0.5 + margin);
 
-  for (int layer = 0; layer < 3; layer++) {
-    float fl = float(layer);
-    float scale = 12.0 + fl * 9.0;
-    vec2 gp = p * scale + vec2(t * (0.6 + fl * 0.4), 0.0);
-    vec2 id = floor(gp);
-    vec2 gv = fract(gp) - 0.5;
-    float rnd = hash(id + fl * 31.4);
-    vec2 offset = vec2(hash(id + 11.0), hash(id + 23.0)) - 0.5;
-    float d = length(gv - offset * 0.72);
-    float size = 0.045 + 0.03 * rnd;
-    float star = smoothstep(size, 0.0, d);
-    float twinkle = 0.45 + 0.55 * sin(uTime * (1.2 + rnd * 2.4) + rnd * 6.283);
-    star *= step(0.62, rnd) * twinkle * (0.5 + fl * 0.22);
-    color += vec3(star);
-  }
+  float wave = sin(u_time * 0.3 + y_rand * 6.283) * 0.005;
 
-  color += uAccent * uPower * 0.05;
+  float ndc_x = x / (aspect * 0.5);
+  float ndc_y = (y + wave) / 0.5;
 
-  float vignette = smoothstep(1.25, 0.25, length(uv - 0.5));
-  color *= mix(0.55, 1.0, vignette);
+  gl_Position = vec4(ndc_x, ndc_y, 0.0, 1.0);
 
-  gl_FragColor = vec4(color, 1.0);
+  float pointSize = size * u_resolution.y * 3.5;
+  gl_PointSize = max(2.0, pointSize);
+
+  float blink = 0.3 + 0.7 * sin(u_time * (1.0 + blink_rand * 2.5) + x_rand * 6.283);
+  v_intensity_base = blink;
+  v_color_type = color_type_rand;
 }
 `
 
-const canvas = ref<HTMLCanvasElement>()
-let quad: ShaderQuadHandle | null = null
-let raf = 0
-let observer: ResizeObserver | null = null
-let startedAt = 0
-let smoothedPower = 0
+const FRAGMENT_SHADER = `
+precision mediump float;
+uniform vec3 u_particle_color;
+uniform vec3 u_particle_accent_color;
 
-const reduced = prefersReducedMotion()
+varying float v_color_type;
+varying float v_intensity_base;
 
-const draw = (now: number) => {
-  if (!quad || !canvas.value) return
-  const parent = canvas.value.parentElement
-  if (!parent) return
+void main() {
+  vec2 pc = gl_PointCoord - 0.5;
+  float dist = length(pc);
 
-  const elapsed = (now - startedAt) / 1000
-  smoothedPower += ((props.power ?? 0) - smoothedPower) * 0.08
+  float alpha = smoothstep(0.5, 0.1, dist) * v_intensity_base;
+  if (alpha < 0.01) discard;
 
-  quad.resize(parent.clientWidth, parent.clientHeight, Math.min(window.devicePixelRatio || 1, 1.5))
-  quad.render(reduced ? 8 : elapsed, {
-    uAccent: colorToVec3(props.accent),
-    uBg: colorToVec3(props.background),
-    uPower: Math.min(1, Math.max(0, smoothedPower)),
+  vec3 baseColor = v_color_type > 0.90 ? u_particle_accent_color : u_particle_color;
+
+  gl_FragColor = vec4(baseColor * alpha, alpha);
+}
+`
+
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+let gl: WebGLRenderingContext | null = null
+let programInfo: twgl.ProgramInfo | null = null
+let bufferInfo: twgl.BufferInfo | null = null
+let raf: number | null = null
+let time = 0
+let last: number | null = null
+
+const parseColor = (value: string): number[] => {
+  const hex = value.trim().replace('#', '')
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return [1, 1, 1]
+  return [
+    parseInt(hex.slice(0, 2), 16) / 255,
+    parseInt(hex.slice(2, 4), 16) / 255,
+    parseInt(hex.slice(4, 6), 16) / 255,
+  ]
+}
+
+const render = (now: number) => {
+  raf = null
+  if (!gl || !programInfo || !bufferInfo) return
+  if (!props.paused && last !== null) time += (now - last) / 1000
+  last = props.paused ? null : now
+
+  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  const bg = parseColor(props.background)
+  gl.clearColor(bg[0], bg[1], bg[2], 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+
+  gl.enable(gl.BLEND)
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+
+  gl.useProgram(programInfo.program)
+  twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
+  twgl.setUniforms(programInfo, {
+    u_resolution: [gl.canvas.width, gl.canvas.height],
+    u_time: time,
+    u_particle_color: parseColor(props.accent),
+    u_particle_accent_color: parseColor(props.accent),
   })
+  twgl.drawBufferInfo(gl, bufferInfo, gl.POINTS)
 
-  if (!reduced) raf = window.requestAnimationFrame(draw)
+  if (!props.paused) raf = requestAnimationFrame(render)
 }
 
-const start = () => {
-  if (!canvas.value || props.paused) return
-  if (quad) return
-  quad = createShaderQuad(canvas.value, FRAGMENT)
-  if (!quad) return
-  startedAt = window.performance.now()
-  raf = window.requestAnimationFrame(draw)
+const invalidate = () => {
+  if (raf !== null) return
+  raf = requestAnimationFrame(render)
 }
 
-const stop = () => {
-  if (raf) window.cancelAnimationFrame(raf)
-  raf = 0
-}
+const setup = () => {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  gl = twgl.getContext(canvas, { alpha: false, depth: false, antialias: false })
+  if (!gl) return
+  programInfo = twgl.createProgramInfo(gl, [VERTEX_SHADER, FRAGMENT_SHADER])
+  if (!programInfo) return
 
-onMounted(() => {
-  start()
-  if (!canvas.value?.parentElement) return
-  observer = new ResizeObserver(() => {
-    if (quad && canvas.value) {
-      const parent = canvas.value.parentElement
-      if (!parent) return
-      quad.resize(parent.clientWidth, parent.clientHeight, Math.min(window.devicePixelRatio || 1, 1.5))
-      if (reduced) quad.render(8, { uAccent: colorToVec3(props.accent), uBg: colorToVec3(props.background) })
-    }
+  const indices = new Float32Array(PARTICLE_COUNT)
+  for (let i = 0; i < PARTICLE_COUNT; i++) indices[i] = i
+  bufferInfo = twgl.createBufferInfoFromArrays(gl, {
+    a_index: { numComponents: 1, data: indices },
   })
-  observer.observe(canvas.value.parentElement)
-})
+  invalidate()
+}
 
-watch(() => props.paused, (paused) => {
-  if (paused) {
-    stop()
-  } else {
-    if (!quad) start()
-    else if (!reduced && !raf) raf = window.requestAnimationFrame(draw)
-  }
-})
+const dispose = () => {
+  if (raf !== null) cancelAnimationFrame(raf)
+  raf = null
+  if (!gl || !programInfo) return
+  gl.deleteProgram(programInfo.program)
+  if (bufferInfo?.attribs?.a_index?.buffer) gl.deleteBuffer(bufferInfo.attribs.a_index.buffer)
+  gl = null
+  programInfo = null
+  bufferInfo = null
+}
 
-onBeforeUnmount(() => {
-  stop()
-  observer?.disconnect()
-  observer = null
-  quad?.dispose()
-  quad = null
-})
+onMounted(setup)
+onBeforeUnmount(dispose)
+
+watch(() => [props.paused, props.accent, props.background, props.power], invalidate)
 </script>

@@ -45,6 +45,7 @@ import {
   ListMusic,
   Monitor,
   Music,
+  Radio,
   RefreshCw,
   Search,
   Settings2,
@@ -55,6 +56,7 @@ import { useI18n } from '@renderer/plugins/i18n'
 import { useRoute } from '@common/utils/vueRouter'
 
 import SettingBasic from './components/SettingBasic.vue'
+import SettingSource from './components/SettingSource.vue'
 import SettingPlay from './components/SettingPlay.vue'
 import SettingPlayDetail from './components/SettingPlayDetail.vue'
 import SettingDesktopLyric from './components/SettingDesktopLyric.vue'
@@ -75,6 +77,7 @@ export default {
   name: 'Setting',
   components: {
     SettingBasic,
+    SettingSource,
     SettingPlay,
     SettingPlayDetail,
     SettingDesktopLyric,
@@ -100,6 +103,7 @@ export default {
     const tocList = computed(() => {
       return [
         { id: 'SettingBasic', title: t('setting__basic'), icon: Settings2 },
+        { id: 'SettingSource', title: '音乐源', icon: Radio },
         { id: 'SettingPlay', title: t('setting__play'), icon: Music },
         { id: 'SettingPlayDetail', title: t('setting__play_detail'), icon: Sparkles },
         { id: 'SettingDesktopLyric', title: t('setting__desktop_lyric'), icon: Monitor },

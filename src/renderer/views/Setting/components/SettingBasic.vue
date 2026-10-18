@@ -57,26 +57,6 @@ div.setting-panel
         RefreshCw(:size="13" :stroke-width="2" :class="{ 'animate-spin': isExtractingTheme }")
         span {{ $t('setting__theme_refresh') }}
 
-  UiSettingSection(:title="$t('setting__basic_source')")
-    .flex.flex-col
-      .v-for v-for="item in apiSources" :key="item.id"
-        UiCheckbox(
-          :id="`setting_api_source_${item.id}`"
-          name="setting_api_source"
-          need
-          :model-value="appSetting['common.apiSource']"
-          :disabled="item.disabled"
-          :value="item.id"
-          :aria-label="item.label"
-          @update:model-value="updateSetting({'common.apiSource': $event})")
-        span.source-line
-          | {{ item.name }}
-          span.desc(v-if="item.desc") {{ item.desc }}
-          span.status(v-if="item.statusLabel") {{ item.statusLabel }}
-    .mt-3
-      UiButton(size="sm" variant="secondary" @click="isShowUserApiModal = true")
-        | 管理自定义源 / 导入音乐源
-
   UiSettingSection(:title="$t('setting__basic_window_size')")
     .flex.flex-wrap.gap-x-5.gap-y-1
       .v-for v-for="item in windowSizeList" :key="item.id"
@@ -169,21 +149,18 @@ div.setting-panel
         @update:model-value="updateSetting({'common.playBarProgressStyle': $event})")
 
   play-timeout-modal(v-model="isShowPlayTimeoutModal")
-  user-api-modal(v-model="isShowUserApiModal")
 
 </template>
 
 <script>
 import { computed, ref } from '@common/utils/vueTools'
-import { windowSizeList, userApi, isFullscreen } from '@renderer/store'
+import { windowSizeList, isFullscreen } from '@renderer/store'
 import { langList, useI18n } from '@root/lang'
 import { getSystemFonts } from '@renderer/utils/ipc'
-import apiSourceInfo from '@renderer/utils/musicSdk/api-source-info'
 import { useTimeout } from '@renderer/core/player/timeoutStop'
 
 import { RefreshCw } from 'lucide-vue-next'
 import PlayTimeoutModal from './PlayTimeoutModal.vue'
-import UserApiModal from './UserApiModal.vue'
 import { appSetting, updateSetting } from '@renderer/store/setting'
 import { activeTheme, isExtractingTheme, isFallbackTheme } from '@renderer/core/theme/state'
 import { refreshCoverTheme } from '@renderer/core/theme/useCoverTheme'
@@ -200,7 +177,6 @@ export default {
   components: {
     RefreshCw,
     PlayTimeoutModal,
-    UserApiModal,
     UiButton,
     UiCheckbox,
     UiSegmented,
@@ -236,35 +212,7 @@ export default {
     const isShowPlayTimeoutModal = ref(false)
     const { timeLabel } = useTimeout()
 
-    const isShowUserApiModal = ref(false)
-    const getApiStatus = () => {
-      let status
-      if (userApi.status) status = t('setting__basic_source_status_success')
-      else if (userApi.message == 'initing') status = t('setting__basic_source_status_initing')
-      else status = `${t('setting__basic_source_status_failed')}`
 
-      return status
-    }
-    const apiSources = computed(() => {
-      return [
-        ...apiSourceInfo.map(api => ({
-          id: api.id,
-          name: api.name,
-          label: api.name,
-          disabled: api.disabled,
-        })),
-        ...userApi.list.map(api => ({
-          id: api.id,
-          name: api.name,
-          label: `${api.name}${api.id == appSetting['common.apiSource'] ? `[${getApiStatus()}]` : ''}`,
-          desc: [/^\d/.test(api.version) ? `v${api.version}` : api.version].filter(Boolean).join(', '),
-          statusLabel: api.id == appSetting['common.apiSource'] ? `[${getApiStatus()}]` : '',
-          status: api.status,
-          message: api.message,
-          disabled: false,
-        })),
-      ]
-    })
 
     const sourceNameTypes = computed(() => {
       return [
@@ -323,8 +271,6 @@ export default {
       updateFonts,
       isShowPlayTimeoutModal,
       timeLabel,
-      apiSources,
-      isShowUserApiModal,
       windowSizeList,
       langList,
       sourceNameTypes,
