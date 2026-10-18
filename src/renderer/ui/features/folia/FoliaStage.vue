@@ -29,18 +29,52 @@ const emit = defineEmits<{
 const dom_stage = ref<HTMLElement | null>(null)
 let root: Root | null = null
 
-/** 猫仙歌词只有行级时间戳：每行合成一个覆盖整行的词，不做伪造的逐字切分 */
+/** 解析 LX Music 逐字歌词（lxlrc）：每行 [mm:ss.xxx]，词用 <mm:ss.xxx> 包裹 */
+const parseLxLyricWords = (lxlrc: string): Map<string, Array<{ text: string, startTime: number, endTime: number }>> => {
+  const result = new Map<string, Array<{ text: string, startTime: number, endTime: number }>>()
+  const timeToSec = (t: string) => {
+    const m = /(\d+):(\d+(?:\.\d+)?)/.exec(t)
+    if (!m) return 0
+    return Number(m[1]) * 60 + Number(m[2])
+  }
+  for (const rawLine of lxlrc.split('\n')) {
+    const lineMatch = /^\[(\d+:\d+(?:\.\d+)?)\]/.exec(rawLine)
+    if (!lineMatch) continue
+    const lineStart = timeToSec(lineMatch[1])
+    const words: Array<{ text: string, startTime: number, endTime: number }> = []
+    const wordRxp = /<(\d+:\d+(?:\.\d+)?)>([^<]*)/g
+    let match: RegExpExecArray | null
+    while ((match = wordRxp.exec(rawLine)) !== null) {
+      words.push({ text: match[2], startTime: timeToSec(match[1]), endTime: timeToSec(match[1]) })
+    }
+    // 用下一个词的开始时间作为上一个词的结束时间
+    for (let i = 0; i < words.length - 1; i++) words[i].endTime = words[i + 1].startTime
+    if (words.length) {
+      const key = lineStart.toFixed(3)
+      const existing = result.get(key)
+      if (existing) existing.push(...words)
+      else result.set(key, words)
+    }
+  }
+  return result
+}
+
+/** 猫仙歌词：有逐字（lxlrc）时按词同步，否则每行一个词，不伪造逐字 */
 const foliaLines = computed<Line[]>(() => {
   const lines = lyric.lines
+  const wordMap = musicInfo.lxlrc ? parseLxLyricWords(musicInfo.lxlrc) : null
+
   return lines.map((line, index) => {
     const next = lines[index + 1]
     const startTime = line.time
     const endTime = next ? next.time : startTime + 5
+    const words = wordMap?.get(startTime.toFixed(3))
     return {
-      words: [{ text: line.text, startTime, endTime }],
+      words: words?.length ? words : [{ text: line.text, startTime, endTime }],
       startTime,
       endTime,
       fullText: line.text,
+      translation: line.extendedLyrics.find(l => l && l !== line.text) ?? undefined,
     }
   })
 })
@@ -110,6 +144,7 @@ watch([
   () => musicInfo.name,
   () => musicInfo.singer,
   () => musicInfo.album,
+  () => musicInfo.lxlrc,
   () => props.paused,
 ], render, { deep: false })
 
