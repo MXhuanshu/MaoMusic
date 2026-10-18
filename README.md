@@ -7,9 +7,9 @@
 它兼容 LX Music 的音乐源与自定义源，但**不是 LX Music 的皮肤版**——界面、组件、主题系统、视觉引擎都是重新实现的，与旧版不共享任何 UI 代码。
 
 - 作者：MXhuanshu（猫仙）
-- 当前版本：**1.0.3**
+- 当前版本：**2.0.0**
 - 平台：Windows 10 / 11（x64）
-- 许可：Apache-2.0
+- 许可：AGPL-3.0（视觉层复用 Folia，详见 NOTICE）
 
 ---
 
@@ -45,7 +45,7 @@
 ## 安装
 
 1. 打开 [Releases](https://github.com/MXhuanshu/MaoMusic/releases)；
-2. 下载 `MaoMusic-1.0.3-x64-setup.exe`；
+2. 下载 `MaoMusic-2.0.0-x64-setup.exe`；
 3. 双击安装。安装包未做代码签名，Windows SmartScreen 若提示「未知发布者」，选择「更多信息 → 仍要运行」；
 4. 安装位置默认 `%LOCALAPPDATA%\Programs\猫仙音乐`，按当前用户安装，不需要管理员权限。
 
@@ -101,6 +101,17 @@ resources           NSIS 安装界面资源与图标
 - 不继承 LX Music 的界面、皮肤与主题市场；
 - 更新只从本仓库发布，不会覆盖为其他项目的版本。
 
+## 与 Folia 的关系
+
+播放详情的沉浸式歌词舞台（14 种歌词视觉模式、6 种背景模式、封面取色主题混合、模式切换转场）**直接复用 Folia 项目的源代码**，位于 `src/renderer/folia-src/`，通过 React island 挂载在 Vue 页面中。
+
+- Folia 项目：https://github.com/chthollyphile/folia-major
+- Folia 许可证：AGPL-3.0
+- 因此本项目整体以 **AGPL-3.0** 发布，详见 [NOTICE](./NOTICE)
+
+歌词视觉模式：经典 / 华彩 / 阿卡贝拉 / 克拉达 / 立体景 / 烟雾 / 光晕 / 莫奈 / 帕蒂塔 / 摆钟 / 十四行诗 / 静物 / 蛋彩 / 倾斜
+背景模式：星野 / 潜影 / 莫奈 / 游牧 / 通用 / 自定义
+
 ## 反馈
 
 - 问题与建议：[Issues](https://github.com/MXhuanshu/MaoMusic/issues)
@@ -108,4 +119,4 @@ resources           NSIS 安装界面资源与图标
 
 ## 许可
 
-[Apache-2.0](./LICENSE)
+[AGPL-3.0](./LICENSE) — 见 [NOTICE](./NOTICE) 了解第三方来源与修改说明
