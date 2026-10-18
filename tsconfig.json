@@ -1,8 +1,15 @@
 {
   // https://github.com/tsconfig/bases#recommended-tsconfigjson
   "extends": "@tsconfig/recommended/tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "src/renderer/folia-src"
+  ],
   "compilerOptions": {
     "target": "ESNext",
+    "jsx": "react-jsx",
     "allowJs": true,
     "module": "ESNext",
     "moduleResolution": "bundler",

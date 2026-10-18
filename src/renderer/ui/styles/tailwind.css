@@ -16,6 +16,6 @@
 
 @import "./tokens.css";
 
-@source "../../**/*.{vue,ts}";
+@source "../../**/*.{vue,ts,tsx}";
 @source "../../../renderer-lyric/**/*.{vue,ts}";
 @source not "../../../main";

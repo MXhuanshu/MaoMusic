@@ -30,7 +30,8 @@
           v-if="appSetting['player.audioVisualization'] && visibled"
           class="absolute inset-x-0 bottom-0 h-2/5 opacity-25"
         />
-        <VisualizerLayer />
+        <!-- Folia 视觉舞台（React island，folia-src 原码） -->
+        <FoliaStage v-if="visibled && appSetting['playDetail.visualizer'] === 'full'" @back="hide" />
       </div>
 
       <!-- 顶部：收起 + 窗口控制 -->
@@ -221,7 +222,7 @@ import LyricPlayer from '@renderer/components/layout/PlayDetail/LyricPlayer.vue'
 import MusicComment from '@renderer/components/layout/PlayDetail/components/MusicComment/index.vue'
 import { registerAutoHideMounse, unregisterAutoHideMounse } from '@renderer/components/layout/PlayDetail/autoHideMounse'
 import PanelShell from '@renderer/ui/features/panel/PanelShell.vue'
-import VisualizerLayer from '@renderer/ui/features/visualizer/VisualizerLayer.vue'
+import FoliaStage from '@renderer/ui/features/folia/FoliaStage.vue'
 import { useVisualizerMode } from '@renderer/ui/features/visualizer/useVisualizerMode'
 import { lyric } from '@renderer/store/player/lyric'
 import UiButton from '@renderer/ui/primitives/UiButton.vue'
@@ -243,7 +244,7 @@ export default {
     LyricPlayer,
     MusicComment,
     PanelShell,
-    VisualizerLayer,
+    FoliaStage,
     UiButton,
     UiProgressBar,
   },

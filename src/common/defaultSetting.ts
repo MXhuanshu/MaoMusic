@@ -72,6 +72,8 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.isDelayScroll': true,
   'playDetail.visualizer': 'lite',
   'playDetail.background': 'mosaic',
+  'playDetail.visualizerMode': 'classic',
+  'playDetail.backgroundMode': 'sora',
 
   'desktopLyric.enable': false,
   'desktopLyric.isLock': false,

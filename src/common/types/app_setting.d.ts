@@ -326,6 +326,19 @@ declare global {
        */
       'playDetail.background': 'mosaic' | 'starfield'
 
+      /**
+       * 播放详情页-Folia 歌词视觉模式（folia-src 原码注册表）
+       * cadenza / cappella / claddagh / classic / diorama / fume / lumiere /
+       * monet / partita / pendolo / sonnet / still / tempera / tilt
+       */
+      'playDetail.visualizerMode': string
+
+      /**
+       * 播放详情页-Folia 背景模式
+       * common / latent / monet / nomand / sora / url
+       */
+      'playDetail.backgroundMode': string
+
 
       /**
        * 是否启用桌面歌词

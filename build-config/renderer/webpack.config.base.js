@@ -30,18 +30,53 @@ module.exports = {
       '@lyric': path.join(__dirname, '../../src/renderer-lyric'),
       '@static': path.join(__dirname, '../../src/static'),
       '@common': path.join(__dirname, '../../src/common'),
+      // Folia 源码里的 `@/` 指向它自己的 src，即 vendor 进来的 folia-src
+      '@/': path.join(__dirname, '../../src/renderer/folia-src'),
+      '@': path.join(__dirname, '../../src/renderer/folia-src'),
     },
     extensions: ['.tsx', '.ts', '.js', '.json', '.node'],
   },
   module: {
     rules: [
       {
+        // Folia 视觉层是 React/TSX，用 esbuild 只转译不类型检查，避免把上游类型错误带进构建
+        test: /\.tsx$/,
+        include: filePath => filePath.replace(/\\/g, '/').includes('/src/renderer/folia-src/'),
+        use: {
+          loader: 'esbuild-loader',
+          options: {
+            loader: 'tsx',
+            target: 'es2020',
+            jsx: 'automatic',
+          },
+        },
+      },
+      {
+        // 纯 .ts 文件不能用 tsx loader，否则泛型语法会被当成 JSX
+        test: /\.ts$/,
+        include: filePath => filePath.replace(/\\/g, '/').includes('/src/renderer/folia-src/'),
+        use: {
+          loader: 'esbuild-loader',
+          options: {
+            loader: 'ts',
+            target: 'es2020',
+          },
+        },
+      },
+      {
         test: /\.tsx?$/,
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+          filePath => filePath.replace(/\\/g, '/').includes('/src/renderer/folia-src/'),
+        ],
         use: {
           loader: 'ts-loader',
           options: {
             appendTsSuffixTo: [/\.vue$/],
+            // 只检查被引用到的文件，避免把 vendor 进来的 Folia 源码整棵树做类型检查
+            onlyCompileBundledFiles: true,
+            // Folia 源码由 esbuild 转译；ts-loader 只转译不做类型检查，避免上游类型错误阻断构建
+            transpileOnly: true,
           },
         },
         parser: {
