@@ -10,7 +10,6 @@
         :list="list"
         :playing-index="playingIndex"
         :selected-list="selectedList"
-        subtitle-key="none"
         @item-click="handleListItemClick"
         @item-contextmenu="handleListItemRightClick"
       >

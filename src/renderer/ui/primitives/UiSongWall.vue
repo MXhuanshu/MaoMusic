@@ -43,7 +43,7 @@
         </span>
 
         <span class="absolute inset-x-0 bottom-0 p-2.5">
-          <span class="line-clamp-1 text-[12.5px] font-medium text-white">{{ item.name }}</span>
+          <span class="line-clamp-1 text-[12.5px] font-medium text-white">{{ titleOf(item) }}</span>
           <span class="mt-0.5 line-clamp-1 text-[10.5px] text-white/70">{{ subtitleOf(item) }}</span>
         </span>
 
@@ -93,10 +93,14 @@ const rootRef = ref<HTMLElement | null>(null)
 
 const coverOf = (item: any): string | undefined => item?.pic ?? item?.musicInfo?.pic ?? item?.metadata?.picUrl
 
+const titleOf = (item: any): string => item?.name ?? item?.musicInfo?.name ?? ''
+
 const subtitleOf = (item: any): string => {
   if (props.subtitleKey === 'none') return ''
-  if (props.subtitleKey === 'singer') return item?.singer ?? ''
-  return [item?.singer, item?.meta?.albumName].filter(Boolean).join(' · ')
+  const singer = item?.singer ?? item?.musicInfo?.singer ?? ''
+  if (props.subtitleKey === 'singer') return singer
+  const album = item?.meta?.albumName ?? item?.musicInfo?.meta?.albumName ?? ''
+  return [singer, album].filter(Boolean).join(' · ')
 }
 
 const handleClick = (event: MouseEvent, index: number) => {
