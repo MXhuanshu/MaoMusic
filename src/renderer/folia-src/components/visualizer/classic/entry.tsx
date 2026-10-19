@@ -5,7 +5,7 @@ import { QuickControlToggle } from '../../shared/QuickControlChip';
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import { ClassicSettingsPanel } from '../settingsPanels';
 
-import Visualizer from './Visualizer';
+const Visualizer = React.lazy(() => import('./Visualizer'));
 
 // src/components/visualizer/classic/entry.tsx
 // Registers the classic visualizer mode.

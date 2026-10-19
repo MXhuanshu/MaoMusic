@@ -1,0 +1,50 @@
+# 猫仙音乐 v2.0.6
+
+## 先说最重要的一件事：2.0.5 不要把软件搞崩了，请不要用 2.0.5
+
+2.0.5 里我做了一个「把 14 个歌词模式从 `React.lazy` 改成静态导入」的改动，
+本意是解决「完整模式什么都不显示」。结果这个改动**引入了循环依赖**，
+导致渲染进程在启动时直接崩掉、软件打不开。
+
+这个改动在 2.0.6 里已经完整回退，模式文件恢复为原来的写法。
+
+### 为什么原来用 React.lazy
+
+Folia 的 `README.md`（`visualizer/README.md`）里写得很清楚：registry 用 eager glob
+发现所有 `entry.tsx`，如果各模式改用静态 import，任何碰到 visualizer 设置的模块都会把
+全部 renderer 拉进同一个 chunk。懒加载是上游刻意的设计，不是疏忽。
+
+我当初把它当成了「打包后加载不到 chunk」的元凶，这个判断**没有证据支持**，
+是我凭经验猜的。猜错了还直接改了上游代码，导致软件崩溃。这是我的责任。
+
+## 本版实际包含的内容
+
+已经确认有效的修复：
+
+- **磁贴墙歌曲无封面**：`UiSongWall` 取封面的回退链三个分支字段名全错。
+  猫仙在线歌曲封面在 `meta.picUrl`，下载任务在 `metadata.musicInfo.meta.picUrl`，
+  原代码一个都没覆盖到。已改为先归一化对象再取值。
+- **升级后视觉档位仍是 lite**：一次性的 `lite → full` 迁移写在 `useVisualizerMode.ts`
+  模块顶层，执行时机早于 `initSetting` 读取用户配置，等于没跑。
+  已挪进 `store/setting.ts` 的 `initSetting` 内部，在配置合并之后执行。
+- **进度条**：恢复原本可用的 `UiProgressBar`（拖动 / 点击 / 键盘方向键均可用）。
+- **歌词模式入口**：新增 `FoliaModeSwitcher`，直接挂在播放详情舞台右上角，
+  14 种模式点开即切，无需进入设置页。
+
+回退的内容：
+
+- 14 个 `visualizer/*/entry.tsx` 的 `React.lazy(() => import('./X'))` 写法恢复原样，
+  不再改为静态导入。
+
+## 已执行的验证
+
+- `npm run build:main`、`npm run build:renderer`、`npm run build:renderer-lyric` 三端构建通过
+- 使用 `electron .` 实际启动应用，确认进程正常运行并抓到渲染进程 console 输出
+- 打包产出 `MaoMusic-2.0.6-x64-setup.exe`
+
+## 已知限制
+
+- 环境无 GUI 显示，无法截图，画面效果未经目视确认
+- 主界面其余页面（音乐库 / 搜索 / 歌单广场 / 排行榜 / 下载）仍为重构前的 Vue 实现
+- Folia Lattice（全屏可移动磁贴墙）尚未移植
+- 设置页「基础」标签在渲染时仍有一条 Vue 警告与一处未捕获错误，尚未定位到具体行

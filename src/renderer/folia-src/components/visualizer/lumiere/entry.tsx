@@ -6,7 +6,7 @@ import { QuickControlToggle } from '../../shared/QuickControlChip';
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import LumiereSettingsPanel from './LumiereSettingsPanel';
 
-import VisualizerLumiere from './VisualizerLumiere';
+const VisualizerLumiere = React.lazy(() => import('./VisualizerLumiere'));
 
 // src/components/visualizer/lumiere/entry.tsx
 // Registers 绘光, the stage-lighting lyric director: volumetric light, fog, line art and lyrics lit by the beams.

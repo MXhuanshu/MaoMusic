@@ -5,7 +5,7 @@ import { QuickControlToggle } from '../../shared/QuickControlChip';
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import { CladdaghSettingsPanel } from '../settingsPanels';
 
-import VisualizerCladdagh from './VisualizerCladdagh';
+const VisualizerCladdagh = React.lazy(() => import('./VisualizerCladdagh'));
 
 // src/components/visualizer/claddagh/entry.tsx
 

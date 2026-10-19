@@ -1,7 +1,7 @@
 {
   "name": "maomusic",
   "productName": "猫仙音乐",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "猫仙音乐 —— 免费音乐播放器，兼容 猫仙音乐 音乐源",
   "main": "./dist/main.js",
   "scripts": {

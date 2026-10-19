@@ -2,7 +2,7 @@ import React from 'react';
 import { DEFAULT_CADENZA_TUNING } from '../../../types';
 import { defineVisualizer, type VisualizerSharedProps } from '../definition';
 
-import VisualizerCadenza from './VisualizerCadenza';
+const VisualizerCadenza = React.lazy(() => import('./VisualizerCadenza'));
 
 // src/components/visualizer/cadenza/entry.tsx
 // Registers Cadenza and keeps its font-scale adaptation local to the mode.

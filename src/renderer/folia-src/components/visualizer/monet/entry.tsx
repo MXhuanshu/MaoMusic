@@ -5,7 +5,7 @@ import { QuickControlToggle } from '../../shared/QuickControlChip';
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import { MonetSettingsPanel } from './MonetSettingsPanel';
 
-import VisualizerMonet from './VisualizerMonet';
+const VisualizerMonet = React.lazy(() => import('./VisualizerMonet'));
 
 // src/components/visualizer/monet/entry.tsx
 // Registers the Monet poster visualizer and its mode-owned settings panel.
