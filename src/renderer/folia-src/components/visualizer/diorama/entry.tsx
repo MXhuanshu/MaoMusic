@@ -6,7 +6,7 @@ import { defineVisualizer, type VisualizerQuickControlsProps } from '../definiti
 import { BEAT_EFFECT_IDS } from '../../../services/beatFx/beatEffects';
 import { DioramaSettingsPanel } from '../settingsPanels';
 
-const VisualizerDiorama = React.lazy(() => import('./VisualizerDiorama'));
+import VisualizerDiorama from './VisualizerDiorama';
 
 // src/components/visualizer/diorama/entry.tsx
 // Registers Diorama: a procedural 3D lyric flythrough with lyric-synced cinematic camera work, plus

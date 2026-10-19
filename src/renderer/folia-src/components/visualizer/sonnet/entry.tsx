@@ -6,7 +6,7 @@ import { defineVisualizer, type VisualizerQuickControlsProps } from '../definiti
 import { BEAT_EFFECT_IDS } from '../../../services/beatFx/beatEffects';
 import SonnetSettingsPanel from './SonnetSettingsPanel';
 
-const VisualizerSonnet = React.lazy(() => import('./VisualizerSonnet'));
+import VisualizerSonnet from './VisualizerSonnet';
 
 // Every sonnet tunable is a multiplier: 1 leaves the builtin look unchanged.
 const SONNET_TUNABLE = { min: 0, max: 3, identity: 1 } as const;

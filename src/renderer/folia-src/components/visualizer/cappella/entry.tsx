@@ -6,7 +6,7 @@ import { cycleValue, QuickControlChip, QuickControlToggle } from '../../shared/Q
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import { CappellaSettingsPanel } from '../settingsPanels';
 
-const VisualizerCappella = React.lazy(() => import('./VisualizerCappella'));
+import VisualizerCappella from './VisualizerCappella';
 
 // src/components/visualizer/cappella/entry.tsx
 // Registers the Cappella chat visualizer mode.

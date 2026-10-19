@@ -34,6 +34,11 @@
         <FoliaStage v-if="visibled && appSetting['playDetail.visualizer'] === 'full'" @back="hide" />
       </div>
 
+      <!-- 歌词视觉模式切换：直接挂在舞台右上角，不用进设置 -->
+      <div class="absolute right-4 top-12 z-20">
+        <FoliaModeSwitcher v-if="visibled && appSetting['playDetail.visualizer'] === 'full'" />
+      </div>
+
       <!-- 顶部：收起 + 窗口控制 -->
       <header class="app-drag relative z-10 flex h-10 shrink-0 items-center gap-2 px-3">
         <button
@@ -223,6 +228,7 @@ import MusicComment from '@renderer/components/layout/PlayDetail/components/Musi
 import { registerAutoHideMounse, unregisterAutoHideMounse } from '@renderer/components/layout/PlayDetail/autoHideMounse'
 import PanelShell from '@renderer/ui/features/panel/PanelShell.vue'
 import FoliaStage from '@renderer/ui/features/folia/FoliaStage.vue'
+import FoliaModeSwitcher from '@renderer/ui/features/folia/FoliaModeSwitcher.vue'
 import UiProgressBar from '@renderer/ui/features/player/UiProgressBar.vue'
 import { useVisualizerMode } from '@renderer/ui/features/visualizer/useVisualizerMode'
 import { lyric } from '@renderer/store/player/lyric'
@@ -245,6 +251,7 @@ export default {
     MusicComment,
     PanelShell,
     FoliaStage,
+    FoliaModeSwitcher,
     UiButton,
     UiProgressBar,
   },

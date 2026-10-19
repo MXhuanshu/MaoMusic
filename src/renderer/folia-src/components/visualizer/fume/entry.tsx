@@ -6,7 +6,7 @@ import { defineVisualizer, type VisualizerQuickControlsProps } from '../definiti
 import { FumeSettingsPanel } from '../settingsPanels';
 import { fumeBackgroundConfig } from './backgroundConfig';
 
-const VisualizerFume = React.lazy(() => import('./VisualizerFume'));
+import VisualizerFume from './VisualizerFume';
 
 // src/components/visualizer/fume/entry.tsx
 // Registers Fume and its preview tuning panel.

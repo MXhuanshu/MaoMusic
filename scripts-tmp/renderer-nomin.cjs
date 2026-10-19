@@ -1,0 +1,20 @@
+const path = require('path')
+const webpack = require('webpack')
+const { merge } = require('webpack-merge')
+
+const root = path.join(__dirname, '..')
+const baseConfig = require(path.join(root, 'build-config/renderer/webpack.config.base'))
+const prodConfig = require(path.join(root, 'build-config/renderer/webpack.config.prod'))
+
+// 诊断用：关闭压缩，保留可读堆栈
+const cfg = merge(prodConfig, {
+  mode: 'development',
+  devtool: 'eval-cheap-module-source-map',
+  optimization: { minimize: false, minimizer: [] },
+})
+
+webpack(cfg, (err, stats) => {
+  if (err) { console.error(err.stack || err); process.exit(1) }
+  console.log(stats.toString({ chunks: false, colors: false }))
+  process.exit(stats.hasErrors() ? 1 : 0)
+})

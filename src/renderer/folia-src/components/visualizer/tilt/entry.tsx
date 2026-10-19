@@ -4,7 +4,7 @@ import { cycleValue, QuickControlChip } from '../../shared/QuickControlChip';
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import { TiltSettingsPanel } from '../settingsPanels';
 
-const VisualizerTilt = React.lazy(() => import('./VisualizerTilt'));
+import VisualizerTilt from './VisualizerTilt';
 
 // src/components/visualizer/tilt/entry.tsx
 // Registers Tilt and its preview tuning panel.

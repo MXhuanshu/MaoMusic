@@ -6,7 +6,7 @@ import { defineVisualizer, type VisualizerQuickControlsProps } from '../definiti
 import { BEAT_EFFECT_IDS } from '../../../services/beatFx/beatEffects';
 import PendoloSettingsPanel from './PendoloSettingsPanel';
 
-const VisualizerPendolo = React.lazy(() => import('./VisualizerPendolo'));
+import VisualizerPendolo from './VisualizerPendolo';
 
 // src/components/visualizer/pendolo/entry.tsx
 

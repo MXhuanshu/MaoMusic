@@ -5,7 +5,7 @@ import { cycleValue, QuickControlChip, QuickControlToggle } from '../../shared/Q
 import { defineVisualizer, type VisualizerQuickControlsProps } from '../definition';
 import TemperaSettingsPanel from './TemperaSettingsPanel';
 
-const VisualizerTempera = React.lazy(() => import('./VisualizerTempera'));
+import VisualizerTempera from './VisualizerTempera';
 
 // src/components/visualizer/tempera/entry.tsx
 // Registers 凝彩, the deterministic block-composition lyric-PV director.
