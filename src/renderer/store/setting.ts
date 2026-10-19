@@ -35,7 +35,14 @@ export const mergeSetting = (newSetting: Partial<LX.AppSetting>) => {
 }
 
 export const updateSetting = window.lxData.updateSetting = (setting: Partial<LX.AppSetting>) => {
-  // console.warn(setting)
+  // 先合并到本进程的 appSetting，让 UI 立即响应；再写盘到主进程。
+  // 之前只发 IPC、不更新本地，界面完全依赖主进程把值广播回来
+  //（updated_config → sendConfigChange → mergeSetting）才能变。
+  // 这条异步链路有两个已知断点：
+  //   1. initSetting 早于 useApp() 注册 onSettingChanged，启动期发出的更新收不到；
+  //   2. 值没真正变化时主进程会直接 return，不广播。
+  // 结果就是歌词视觉模式这类「点了没反应」的设置。
+  mergeSetting(setting)
   void saveSetting(setting)
 }
 

@@ -7,7 +7,7 @@
 它兼容 LX Music 的音乐源与自定义源，但**不是 LX Music 的皮肤版**——界面、组件、主题系统、视觉引擎都是重新实现的，与旧版不共享任何 UI 代码。
 
 - 作者：MXhuanshu（猫仙）
-- 当前版本：**2.0.6**
+- 当前版本：**2.0.7**
 - 平台：Windows 10 / 11（x64）
 - 许可：AGPL-3.0（视觉层复用 Folia，详见 NOTICE）
 
@@ -45,7 +45,7 @@
 ## 安装
 
 1. 打开 [Releases](https://github.com/MXhuanshu/MaoMusic/releases)；
-2. 下载 `MaoMusic-2.0.6-x64-setup.exe`；
+2. 下载 `MaoMusic-2.0.7-x64-setup.exe`；
 3. 双击安装。安装包未做代码签名，Windows SmartScreen 若提示「未知发布者」，选择「更多信息 → 仍要运行」；
 4. 安装位置默认 `%LOCALAPPDATA%\Programs\猫仙音乐`，按当前用户安装，不需要管理员权限。
 
