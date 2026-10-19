@@ -31,7 +31,11 @@
           class="absolute inset-x-0 bottom-0 h-2/5 opacity-25"
         />
         <!-- Folia 视觉舞台（React island，folia-src 原码） -->
-        <FoliaStage v-if="visibled && appSetting['playDetail.visualizer'] === 'full'" @back="hide" />
+        <FoliaStage
+          v-if="visibled && appSetting['playDetail.visualizer'] === 'full'"
+          @back="hide"
+          @rendered="handleFoliaRendered"
+        />
       </div>
 
       <!-- 歌词视觉模式切换：直接挂在舞台右上角，不用进设置 -->
@@ -269,8 +273,14 @@ export default {
 
     const t = useI18n()
     const visualizerMode = useVisualizerMode()
-    // 3D 歌词只在「完整」档位接管歌词；没有歌词时退回平面歌词
-    const showFlatLyric = computed(() => visualizerMode.value !== 'full' || !lyric.lines.length)
+    // Folia 舞台是否真的渲染出了内容。false（异步 chunk 未就绪 / WebGL 不可用等）时
+    // 自动退回平面歌词，避免「完整模式整页空白、一首歌词都看不到」。
+    const foliaRendered = ref(true)
+    const handleFoliaRendered = (ok) => {
+      foliaRendered.value = ok
+    }
+    // 平面歌词的显示条件：非完整档位 / 没有歌词 / Folia 舞台没渲染出内容
+    const showFlatLyric = computed(() => visualizerMode.value !== 'full' || !lyric.lines.length || !foliaRendered.value)
 
     const tabs = computed(() => [
       { id: 'info', label: t('player_detail__tab_info') },
@@ -340,6 +350,7 @@ export default {
       isFullscreen,
       visibled,
       showFlatLyric,
+      handleFoliaRendered,
       activeTab,
       tabs,
       isShowAddMusicTo,

@@ -24,6 +24,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   back: []
+  /** 舞台是否真的渲染出了内容；false 时调用方应退回平面歌词 */
+  rendered: [ok: boolean]
 }>()
 
 const dom_stage = ref<HTMLElement | null>(null)
@@ -136,6 +138,7 @@ const render = () => {
       emit('back')
     },
   }))
+  reportRendered()
 }
 
 onMounted(() => {
@@ -143,7 +146,21 @@ onMounted(() => {
   root = createRoot(dom_stage.value)
   render()
   rafId = requestAnimationFrame(tick)
+  reportRendered()
 })
+
+// Folia 的模式渲染器是 React.lazy + Suspense(fallback=null)，在打包后的 Electron 里
+// 可能长时间不出内容（异步 chunk 未就绪、WebGL 不可用等）。
+// 这里把「舞台上是否真的渲染出了东西」回传给调用方，由调用方决定是否退回平面歌词，
+// 避免出现「完整模式下整页空白、一首歌词都看不到」。
+let reportTimer: ReturnType<typeof setTimeout> | null = null
+const reportRendered = () => {
+  if (reportTimer) clearTimeout(reportTimer)
+  reportTimer = setTimeout(() => {
+    const el = dom_stage.value
+    emit('rendered', !!el && el.childElementCount > 0)
+  }, 500)
+}
 
 watch([
   mode,
@@ -164,6 +181,8 @@ watch([
 onBeforeUnmount(() => {
   if (rafId !== null) cancelAnimationFrame(rafId)
   rafId = null
+  if (reportTimer) clearTimeout(reportTimer)
+  reportTimer = null
   stageHandle = null
   root?.unmount()
   root = null
